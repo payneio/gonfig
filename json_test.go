@@ -1,9 +1,11 @@
 package gonfig_test
 
 import (
-	. "github.com/Nomon/gonfig"
+	"fmt"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	. "github.com/payneio/gonfig"
 )
 
 var _ = Describe("JsonConfig", func() {
@@ -20,6 +22,10 @@ var _ = Describe("JsonConfig", func() {
 	Context("When the JSON config marshals properly", func() {
 		It("Should have the variables in config", func() {
 			Expect(cfg.Get("test")).To(Equal("123"))
+		})
+		It("Should have the nested variables in config", func() {
+			fmt.Println("sup?", cfg.All())
+			Expect(cfg.Get("test_object:test_b")).To(Equal("b"))
 		})
 		It("Should not error", func() {
 			Expect(err).NotTo(HaveOccurred())

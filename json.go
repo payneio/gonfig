@@ -11,31 +11,45 @@ type JsonConfig struct {
 	Path string
 }
 
+func unmarshalJSONSection(output map[string]string, out map[string]interface{}, path string) interface{} {
+
+	for k, v := range out {
+		kPath := k
+		if path != "" {
+			kPath = fmt.Sprintf("%s:%s", path, k)
+		}
+		switch v := v.(type) {
+		case int:
+			output[kPath] = fmt.Sprintf("%d", v)
+		case float64:
+			output[kPath] = fmt.Sprintf("%f", v)
+		case string:
+			output[kPath] = v
+		case bool:
+			if v {
+				output[kPath] = "true"
+			} else {
+				output[kPath] = "false"
+			}
+		case []interface{}:
+			// What is the expected behavior on lists??
+		case map[string]interface{}:
+			unmarshalJSONSection(output, v, kPath)
+		default:
+			// weird
+		}
+	}
+	return output
+
+}
+
 func unmarshalJson(bytes []byte) (map[string]string, error) {
 	out := make(map[string]interface{})
 	if err := json.Unmarshal(bytes, &out); err != nil {
 		return nil, err
 	}
-	var output map[string]string = make(map[string]string)
-
-	for k, v := range out {
-		switch v := v.(type) {
-		case int:
-			output[k] = fmt.Sprintf("%d", v)
-		case float64:
-			output[k] = fmt.Sprintf("%f", v)
-		case string:
-			output[k] = v
-		case bool:
-			if v {
-				output[k] = "true"
-			} else {
-				output[k] = "false"
-			}
-		default:
-			// i isn't one of the types above
-		}
-	}
+	output := make(map[string]string)
+	unmarshalJSONSection(output, out, "")
 	return output, nil
 }
 
